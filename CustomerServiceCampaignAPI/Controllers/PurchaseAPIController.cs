@@ -6,6 +6,9 @@ using CustomerServiceCampaignAPI.Models.Dto;
 using Microsoft.Extensions.Logging;
 using System.Xml;
 using System.Xml.Linq;
+using Microsoft.EntityFrameworkCore;
+using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CustomerServiceCampaignAPI.Controllers
 {
@@ -162,6 +165,56 @@ namespace CustomerServiceCampaignAPI.Controllers
             
             return null;
         }
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Route("/getCsvReport")]
+        public IActionResult GetCsvReport([FromBody] GetCsvRequestData request)
+        {
+            var campaign = _db.Campaigns.FirstOrDefault(u => u.Id == request.campaignId);
+            if (campaign == null)
+            {
+                ModelState.AddModelError("CustomError", "Campaign does not exist!");
+                return BadRequest(ModelState);
+            }
+
+            TimeSpan timeDifference = request.CurrentDate.Date - campaign.EndDate.Date;
+            int daysDifference = (int)timeDifference.TotalDays;
+            if (daysDifference <= 30)
+            {
+                ModelState.AddModelError("CustomError", "You can get report one mont after campaign end!");
+                return BadRequest(ModelState);
+            }
+                        
+            var purchases = _db.Purchases.Where(p => p.CampaignId == request.campaignId).ToList();
+
+            if (purchases.Count == 0)
+            {
+                return NotFound("No purchase data found.");
+            }
+
+            var csvData = ToCsv(purchases);
+
+            Response.Headers.Add("Content-Disposition", "attachment; filename=successfulPurchases.csv");
+            return File(new System.Text.UTF8Encoding().GetBytes(csvData), "text/csv");
+        }
+
+        private string ToCsv(List<Purchase> data)
+        {
+            var csv = new StringBuilder();
+            csv.AppendLine("Id,AgentId,CustomerId,CampaignId,Price,Discount,PriceWithDiscount,PurchaseDate");
+
+            foreach (var purchase in data)
+            {
+                csv.AppendLine($"{purchase.Id},{purchase.AgentId},{purchase.CustomerId},{purchase.CampaignId},{purchase.Price},{purchase.Discount},{purchase.PriceWithDiscount},{purchase.PurchaseDate}");
+            }
+
+            return csv.ToString();
+        }
+
+
 
         /*[HttpDelete("{id:int}", Name = "DeletePurchase")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
