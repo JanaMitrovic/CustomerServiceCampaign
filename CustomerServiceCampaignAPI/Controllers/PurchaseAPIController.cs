@@ -1,14 +1,15 @@
 ﻿using CustomerServiceCampaignAPI.Data;
-using CustomerServiceCampaignAPI.Models.dto;
 using CustomerServiceCampaignAPI.Models;
 using Microsoft.AspNetCore.Mvc;
-using CustomerServiceCampaignAPI.Models.Dto;
 using Microsoft.Extensions.Logging;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Formats.Asn1;
+using System.Globalization;
+using Microsoft.VisualBasic.FileIO;
 
 namespace CustomerServiceCampaignAPI.Controllers
 {
@@ -56,34 +57,34 @@ namespace CustomerServiceCampaignAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [Route("/savePurchase")]
-        public async Task<ActionResult<PurchaseDTO>> CreatePurchase([FromBody] PurchaseDTO purchaseDTO)
+        public async Task<ActionResult<Purchase>> CreatePurchase([FromBody] Purchase purchase)
         {
-            if (purchaseDTO == null)
+            if (purchase == null)
             {
-                return BadRequest(purchaseDTO);
+                return BadRequest(purchase);
             }
-            if (purchaseDTO.Id > 0)
+            if (purchase.Id > 0)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
-            if (_db.Agents.FirstOrDefault(u => u.Id == purchaseDTO.AgentId) == null)
+            if (_db.Agents.FirstOrDefault(u => u.Id == purchase.AgentId) == null)
             {
                 ModelState.AddModelError("CustomError", "Agent does not exist!");
                 return BadRequest(ModelState);
             }
-            Campaign campaign = _db.Campaigns.FirstOrDefault(u => u.Id == purchaseDTO.CampaignId);
+            Campaign campaign = _db.Campaigns.FirstOrDefault(u => u.Id == purchase.CampaignId);
             if (campaign == null)
             {
                 ModelState.AddModelError("CustomError", "Campaign does not exist!");
                 return BadRequest(ModelState);
             }
-            if (purchaseDTO.PurchaseDate.Date < campaign.StartDate.Date || purchaseDTO.PurchaseDate.Date > campaign.EndDate.Date)
+            if (purchase.PurchaseDate.Date < campaign.StartDate.Date || purchase.PurchaseDate.Date > campaign.EndDate.Date)
             {
                 ModelState.AddModelError("CustomError", "Campaing is not active!");
                 return BadRequest(ModelState);
             }
 
-            XmlNode customerXmlData = await GetCustomerData(purchaseDTO.CustomerId);
+            XmlNode customerXmlData = await GetCustomerData(purchase.CustomerId);
 
             if (customerXmlData == null)
             {
@@ -92,7 +93,7 @@ namespace CustomerServiceCampaignAPI.Controllers
             }
 
             int purchasesCount = _db.Purchases
-                        .Where(p => p.AgentId == purchaseDTO.AgentId && p.CampaignId == purchaseDTO.CampaignId && p.PurchaseDate.Date == purchaseDTO.PurchaseDate.Date)
+                        .Where(p => p.AgentId == purchase.AgentId && p.CampaignId == purchase.CampaignId && p.PurchaseDate.Date == purchase.PurchaseDate.Date)
                         .Count();
             if (purchasesCount >= 5)
             {
@@ -102,20 +103,20 @@ namespace CustomerServiceCampaignAPI.Controllers
 
             Purchase model = new()
             {
-                Id = purchaseDTO.Id,
-                AgentId = purchaseDTO.AgentId,
-                CustomerId = purchaseDTO.CustomerId,
-                CampaignId = purchaseDTO.CampaignId,
-                Price = purchaseDTO.Price,
-                Discount = purchaseDTO.Discount,
-                PriceWithDiscount = purchaseDTO.Price * (100 - purchaseDTO.Discount) / 100,
-                PurchaseDate = purchaseDTO.PurchaseDate
+                Id = purchase.Id,
+                AgentId = purchase.AgentId,
+                CustomerId = purchase.CustomerId,
+                CampaignId = purchase.CampaignId,
+                Price = purchase.Price,
+                Discount = purchase.Discount,
+                PriceWithDiscount = purchase.Price * (100 - purchase.Discount) / 100,
+                PurchaseDate = purchase.PurchaseDate
             };
 
             _db.Purchases.Add(model);
             _db.SaveChanges();
 
-            PurchaseDTO response = new()
+            /*Models.Dto.Purchase response = new()
             {
                 Id = model.Id,
                 AgentId = model.AgentId,
@@ -123,11 +124,11 @@ namespace CustomerServiceCampaignAPI.Controllers
                 CampaignId = model.CampaignId,
                 Price = model.Price,
                 Discount = model.Discount,
-                PriceWithDiscount =model.PriceWithDiscount,
+                PriceWithDiscount = model.PriceWithDiscount,
                 PurchaseDate = model.PurchaseDate
-            };
+            };*/
 
-            return CreatedAtAction(nameof(CreatePurchase), response);
+            return CreatedAtAction(nameof(CreatePurchase), model);
         }
 
         [ApiExplorerSettings(IgnoreApi = true)]
@@ -153,6 +154,7 @@ namespace CustomerServiceCampaignAPI.Controllers
                         nsmgr.AddNamespace("ns", "http://tempuri.org");
 
                         XmlNode findPersonResult = xmlDoc.SelectSingleNode("//ns:FindPersonResult", nsmgr);
+
 
                         return findPersonResult;
                     }
@@ -215,25 +217,24 @@ namespace CustomerServiceCampaignAPI.Controllers
         }
 
 
-
-        /*[HttpDelete("{id:int}", Name = "DeletePurchase")]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public IActionResult DeletePurchase(int id)
+    /*[HttpDelete("{id:int}", Name = "DeletePurchase")]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public IActionResult DeletePurchase(int id)
+    {
+        if (id == 0)
         {
-            if (id == 0)
-            {
-                return BadRequest();
-            }
-            var purchase = _db.Purchases.FirstOrDefault(a => a.Id == id);
-            if (purchase == null)
-            {
-                return NotFound();
-            }
+            return BadRequest();
+        }
+        var purchase = _db.Purchases.FirstOrDefault(a => a.Id == id);
+        if (purchase == null)
+        {
+            return NotFound();
+        }
 
-            _db.Purchases.Remove(purchase);
-            _db.SaveChanges();
-            return NoContent();
-        }*/
-    }
+        _db.Purchases.Remove(purchase);
+        _db.SaveChanges();
+        return NoContent();
+    }*/
+}
 }

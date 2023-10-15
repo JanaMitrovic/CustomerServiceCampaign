@@ -1,8 +1,6 @@
 ﻿using CustomerServiceCampaignAPI.Data;
-using CustomerServiceCampaignAPI.Models.dto;
 using CustomerServiceCampaignAPI.Models;
 using Microsoft.AspNetCore.Mvc;
-using CustomerServiceCampaignAPI.Models.Dto;
 
 namespace CustomerServiceCampaignAPI.Controllers
 {
@@ -50,35 +48,28 @@ namespace CustomerServiceCampaignAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [Route("/createCampaign")]
-        public ActionResult<AgentDTO> CreatePurchase([FromBody] CampaignDTO campaignDTO)
+        public ActionResult<Campaign> CreatePurchase([FromBody] Campaign campaign)
         {
-            if (campaignDTO == null)
+            if (campaign == null)
             {
-                return BadRequest(campaignDTO);
+                return BadRequest(campaign);
             }
-            if (campaignDTO.Id > 0)
+            if (campaign.Id > 0)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
 
             Campaign model = new()
             {
-                Id = campaignDTO.Id,
-                StartDate = campaignDTO.StartDate,
-                EndDate = campaignDTO.StartDate.AddDays(6)
+                Id = campaign.Id,
+                StartDate = campaign.StartDate,
+                EndDate = campaign.StartDate.AddDays(6)
             };
 
             _db.Campaigns.Add(model);
             _db.SaveChanges();
 
-            CampaignDTO response = new()
-            {
-                Id = model.Id,
-                StartDate = model.StartDate,
-                EndDate = model.EndDate
-            };
-
-            return CreatedAtAction(nameof(CreatePurchase), response);
+            return CreatedAtAction(nameof(CreatePurchase), model);
         }
 
         /*[HttpDelete("{id:int}", Name = "DeleteCampaign")]
