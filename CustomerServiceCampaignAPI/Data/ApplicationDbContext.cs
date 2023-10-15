@@ -11,6 +11,7 @@ namespace CustomerServiceCampaignAPI.Data
         }
         public DbSet<Agent> Agents { get; set; }
         public DbSet<Campaign> Campaigns { get; set; }
+        public DbSet<Purchase> Purchases { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
