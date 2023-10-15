@@ -17,14 +17,14 @@ namespace CustomerServiceCampaignAPI.Controllers
             _db = db;
         }
 
-        [HttpGet]
+        /*[HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<CampaignDTO>> GetCampaigns()
         {
             return Ok(_db.Campaigns.ToList());
-        }
+        }*/
 
-        [HttpGet("{id:int}", Name = "GetCampaign")]
+        /*[HttpGet("{id:int}", Name = "GetCampaign")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -43,14 +43,14 @@ namespace CustomerServiceCampaignAPI.Controllers
             }
 
             return Ok(campaign);
-        }
+        }*/
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [Route("/createCampaign")]
-        public ActionResult<AgentDTO> CreateAgent([FromBody] CampaignDTO campaignDTO)
+        public ActionResult<AgentDTO> CreatePurchase([FromBody] CampaignDTO campaignDTO)
         {
             if (campaignDTO == null)
             {
@@ -78,10 +78,10 @@ namespace CustomerServiceCampaignAPI.Controllers
                 EndDate = model.EndDate
             };
 
-            return CreatedAtRoute("GetCampaign", new { id = campaignDTO.Id }, response);
+            return CreatedAtAction(nameof(CreatePurchase), response);
         }
 
-        [HttpDelete("{id:int}", Name = "DeleteCampaign")]
+        /*[HttpDelete("{id:int}", Name = "DeleteCampaign")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public IActionResult DeleteCampaign(int id)
@@ -99,6 +99,6 @@ namespace CustomerServiceCampaignAPI.Controllers
             _db.Campaigns.Remove(campaign);
             _db.SaveChanges();
             return NoContent();
-        }
+        }*/
     }
 }

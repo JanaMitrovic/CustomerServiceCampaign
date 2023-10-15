@@ -20,14 +20,14 @@ namespace CustomerServiceCampaignAPI.Controllers
             _db = db;
         }
 
-        [HttpGet]
+        /*[HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<PurchaseDTO>> GetPurchases()
         {
             return Ok(_db.Purchases.ToList());
-        }
+        }*/
 
-        [HttpGet("{id:int}", Name = "GetPurchase")]
+        /*[HttpGet("{id:int}", Name = "GetPurchase")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -46,14 +46,14 @@ namespace CustomerServiceCampaignAPI.Controllers
             }
 
             return Ok(purchase);
-        }
+        }*/
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [Route("/savePurchase")]
-        public async Task<ActionResult<PurchaseDTO>> CreateAgent([FromBody] PurchaseDTO purchaseDTO)
+        public async Task<ActionResult<PurchaseDTO>> CreatePurchase([FromBody] PurchaseDTO purchaseDTO)
         {
             if (purchaseDTO == null)
             {
@@ -112,7 +112,19 @@ namespace CustomerServiceCampaignAPI.Controllers
             _db.Purchases.Add(model);
             _db.SaveChanges();
 
-            return CreatedAtRoute("GetCampaign", new { id = purchaseDTO.Id }, purchaseDTO);
+            PurchaseDTO response = new()
+            {
+                Id = model.Id,
+                AgentId = model.AgentId,
+                CustomerId = model.CustomerId,
+                CampaignId = model.CampaignId,
+                Price = model.Price,
+                Discount = model.Discount,
+                PriceWithDiscount =model.PriceWithDiscount,
+                PurchaseDate = model.PurchaseDate
+            };
+
+            return CreatedAtAction(nameof(CreatePurchase), response);
         }
 
         [ApiExplorerSettings(IgnoreApi = true)]
@@ -147,11 +159,11 @@ namespace CustomerServiceCampaignAPI.Controllers
             {
                 Console.WriteLine("Error: " + ex.Message);
             }
-
+            
             return null;
         }
 
-        [HttpDelete("{id:int}", Name = "DeletePurchase")]
+        /*[HttpDelete("{id:int}", Name = "DeletePurchase")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public IActionResult DeletePurchase(int id)
@@ -169,6 +181,6 @@ namespace CustomerServiceCampaignAPI.Controllers
             _db.Purchases.Remove(purchase);
             _db.SaveChanges();
             return NoContent();
-        }
+        }*/
     }
 }
