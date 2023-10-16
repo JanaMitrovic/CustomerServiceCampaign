@@ -10,6 +10,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Formats.Asn1;
 using System.Globalization;
 using Microsoft.VisualBasic.FileIO;
+using CustomerServiceCampaignAPI.Models.CustomerAPIData;
 
 namespace CustomerServiceCampaignAPI.Controllers
 {
@@ -84,7 +85,7 @@ namespace CustomerServiceCampaignAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            XmlNode customerXmlData = await GetCustomerData(purchase.CustomerId);
+            XmlElement customerXmlData = await GetCustomerData(purchase.CustomerId);
 
             if (customerXmlData == null)
             {
@@ -116,23 +117,11 @@ namespace CustomerServiceCampaignAPI.Controllers
             _db.Purchases.Add(model);
             _db.SaveChanges();
 
-            /*Models.Dto.Purchase response = new()
-            {
-                Id = model.Id,
-                AgentId = model.AgentId,
-                CustomerId = model.CustomerId,
-                CampaignId = model.CampaignId,
-                Price = model.Price,
-                Discount = model.Discount,
-                PriceWithDiscount = model.PriceWithDiscount,
-                PurchaseDate = model.PurchaseDate
-            };*/
-
             return CreatedAtAction(nameof(CreatePurchase), model);
         }
 
         [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<XmlNode> GetCustomerData(int customerId)
+        public async Task<XmlElement> GetCustomerData(int customerId)
         {
             string soapApiUrl = "https://www.crcind.com/csp/samples/SOAP.Demo.cls?soap_method=FindPerson&id=" + customerId;
 
@@ -155,8 +144,12 @@ namespace CustomerServiceCampaignAPI.Controllers
 
                         XmlNode findPersonResult = xmlDoc.SelectSingleNode("//ns:FindPersonResult", nsmgr);
 
+                        if (findPersonResult is XmlElement)
+                        {
+                            return (XmlElement)findPersonResult;
+                        }
 
-                        return findPersonResult;
+                        //return findPersonResult;
                     }
                 }
             }
@@ -216,25 +209,128 @@ namespace CustomerServiceCampaignAPI.Controllers
             return csv.ToString();
         }
 
-
-    /*[HttpDelete("{id:int}", Name = "DeletePurchase")]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public IActionResult DeletePurchase(int id)
-    {
-        if (id == 0)
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Route("/showReportData")]
+        public async Task<IActionResult> ShowReportData(IFormFile file)
         {
-            return BadRequest();
-        }
-        var purchase = _db.Purchases.FirstOrDefault(a => a.Id == id);
-        if (purchase == null)
-        {
-            return NotFound();
+            if (file == null)
+            {
+                ModelState.AddModelError("CustomError", "File is not uploaded!");
+                return BadRequest(ModelState);
+            }
+            if (file.Length == 0)
+            {
+                ModelState.AddModelError("CustomError", "File is empty!");
+                return BadRequest(ModelState);
+            }
+
+            using (var streamReader = new StreamReader(file.OpenReadStream()))
+            {
+                var response = new List<CsvResponseData>();
+
+                var csvParser = new TextFieldParser(streamReader);
+                csvParser.SetDelimiters(new string[] { "," });
+
+                string[] fields = csvParser.ReadFields();
+
+                while (!csvParser.EndOfData)
+                {
+                    string[] data = csvParser.ReadFields();
+
+                    var purchase = new Purchase
+                    {
+                        Id = int.Parse(data[0]),
+                        AgentId = int.Parse(data[1]),
+                        CustomerId = int.Parse(data[2]),
+                        CampaignId = int.Parse(data[3]),
+                        Price = int.Parse(data[4]),
+                        Discount = int.Parse(data[5]),
+                        PriceWithDiscount = int.Parse(data[6]),
+                        PurchaseDate = DateTime.Parse(data[7])
+
+                    };
+
+                    CsvResponseData element = new CsvResponseData();
+                    element.Purchase = purchase;
+
+                    XmlElement customerData = await GetCustomerData(purchase.Id);
+                    if(customerData != null)
+                    {
+                        Person customer = ExtractCustomerData(customerData);
+                        element.Customer = customer;
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("CustomError", "Customer does not exist!");
+                        return BadRequest(ModelState);
+                    }
+
+                    response.Add(element);
+                }
+
+
+                return Ok(response);
+            }
         }
 
-        _db.Purchases.Remove(purchase);
-        _db.SaveChanges();
-        return NoContent();
-    }*/
-}
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public Person ExtractCustomerData(XmlElement findPersonResult)
+        {
+            Person person = new Person
+            {
+                Name = GetElementValue(findPersonResult, "Name"),
+                SSN = GetElementValue(findPersonResult, "SSN"),
+                DOB = DateTime.Parse(GetElementValue(findPersonResult, "DOB")),
+                Age = long.Parse(GetElementValue(findPersonResult, "Age")),
+                Home = new Address
+                {
+                    Street = GetElementValue(findPersonResult, "Home/Street"),
+                    City = GetElementValue(findPersonResult, "Home/City"),
+                    State = GetElementValue(findPersonResult, "Home/State"),
+                    Zip = GetElementValue(findPersonResult, "Home/Zip")
+                },
+                Office = new Address
+                {
+                    Street = GetElementValue(findPersonResult, "Office/Street"),
+                    City = GetElementValue(findPersonResult, "Office/City"),
+                    State = GetElementValue(findPersonResult, "Office/State"),
+                    Zip = GetElementValue(findPersonResult, "Office/Zip")
+                },
+            };
+
+            return person;
+        }
+
+        private string GetElementValue(XmlElement parent, string elementName)
+        {
+            var element = parent.GetElementsByTagName(elementName);
+            if (element.Count > 0)
+            {
+                return element[0].InnerText;
+            }
+            return null; // Handle missing elements appropriately
+        }
+
+        /*[HttpDelete("{id:int}", Name = "DeletePurchase")]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public IActionResult DeletePurchase(int id)
+        {
+            if (id == 0)
+            {
+                return BadRequest();
+            }
+            var purchase = _db.Purchases.FirstOrDefault(a => a.Id == id);
+            if (purchase == null)
+            {
+                return NotFound();
+            }
+
+            _db.Purchases.Remove(purchase);
+            _db.SaveChanges();
+            return NoContent();
+        }*/
+    }
 }
