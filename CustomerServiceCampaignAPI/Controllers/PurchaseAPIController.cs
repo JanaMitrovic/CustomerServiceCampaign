@@ -5,7 +5,6 @@ using System.Xml;
 using System.Text;
 using Microsoft.VisualBasic.FileIO;
 using CustomerServiceCampaignAPI.Models.CustomerAPIData;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace CustomerServiceCampaignAPI.Controllers
 {
@@ -20,22 +19,23 @@ namespace CustomerServiceCampaignAPI.Controllers
             _db = db;
         }
 
-        /*[HttpGet]
+        [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<PurchaseDTO>> GetPurchases()
+        public ActionResult<IEnumerable<Purchase>> GetPurchases()
         {
             return Ok(_db.Purchases.ToList());
-        }*/
+        }
 
-        /*[HttpGet("{id:int}", Name = "GetPurchase")]
+        [HttpGet("{id:int}", Name = "GetPurchase")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<PurchaseDTO> GetPurchase(int id)
+        public ActionResult<Purchase> GetPurchase(int id)
         {
             if (id == 0)
             {
-                return BadRequest();
+                ModelState.AddModelError("CustomError", "Id cannot be 0!");
+                return BadRequest(ModelState);
             }
 
             var purchase = _db.Purchases.FirstOrDefault(u => u.Id == id);
@@ -46,12 +46,12 @@ namespace CustomerServiceCampaignAPI.Controllers
             }
 
             return Ok(purchase);
-        }*/
+        }
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [Route("/savePurchase")]
+        [Route("/createPurchase")]
         public async Task<ActionResult<Purchase>> CreatePurchase([FromBody] Purchase purchase)
         {
             //Check if puchase object is not null
@@ -320,14 +320,15 @@ namespace CustomerServiceCampaignAPI.Controllers
             return null;
         }
 
-        /*[HttpDelete("{id:int}", Name = "DeletePurchase")]
+        [HttpDelete("{id:int}", Name = "DeletePurchase")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public IActionResult DeletePurchase(int id)
         {
             if (id == 0)
             {
-                return BadRequest();
+                ModelState.AddModelError("CustomError", "Id cannot be 0!");
+                return BadRequest(ModelState);
             }
             var purchase = _db.Purchases.FirstOrDefault(a => a.Id == id);
             if (purchase == null)
@@ -338,6 +339,6 @@ namespace CustomerServiceCampaignAPI.Controllers
             _db.Purchases.Remove(purchase);
             _db.SaveChanges();
             return NoContent();
-        }*/
+        }
     }
 }

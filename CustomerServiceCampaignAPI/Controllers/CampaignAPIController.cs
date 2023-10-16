@@ -15,22 +15,23 @@ namespace CustomerServiceCampaignAPI.Controllers
             _db = db;
         }
 
-        /*[HttpGet]
+        [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<CampaignDTO>> GetCampaigns()
+        public ActionResult<IEnumerable<Campaign>> GetCampaigns()
         {
             return Ok(_db.Campaigns.ToList());
-        }*/
+        }
 
-        /*[HttpGet("{id:int}", Name = "GetCampaign")]
+        [HttpGet("{id:int}", Name = "GetCampaign")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<AgentDTO> GetCampaign(int id)
+        public ActionResult<Campaign> GetCampaign(int id)
         {
             if (id == 0)
             {
-                return BadRequest();
+                ModelState.AddModelError("CustomError", "Id cannot be 0!");
+                return BadRequest(ModelState);
             }
 
             var campaign = _db.Campaigns.FirstOrDefault(u => u.Id == id);
@@ -41,13 +42,13 @@ namespace CustomerServiceCampaignAPI.Controllers
             }
 
             return Ok(campaign);
-        }*/
+        }
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [Route("/createCampaign")]
-        public ActionResult<Campaign> CreatePurchase([FromBody] Campaign campaign)
+        [Route("/startCampaign")]
+        public ActionResult<Campaign> CreateCampaign([FromBody] Campaign campaign)
         {
             //Check if campaign object passed throw request is not null
             if (campaign == null)
@@ -74,17 +75,18 @@ namespace CustomerServiceCampaignAPI.Controllers
             _db.Campaigns.Add(model);
             _db.SaveChanges();
 
-            return CreatedAtAction(nameof(CreatePurchase), model);
+            return CreatedAtAction(nameof(CreateCampaign), model);
         }
 
-        /*[HttpDelete("{id:int}", Name = "DeleteCampaign")]
+        [HttpDelete("{id:int}", Name = "DeleteCampaign")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public IActionResult DeleteCampaign(int id)
         {
             if (id == 0)
             {
-                return BadRequest();
+                ModelState.AddModelError("CustomError", "Id cannot be 0!");
+                return BadRequest(ModelState);
             }
             var campaign = _db.Campaigns.FirstOrDefault(a => a.Id == id);
             if (campaign == null)
@@ -95,6 +97,6 @@ namespace CustomerServiceCampaignAPI.Controllers
             _db.Campaigns.Remove(campaign);
             _db.SaveChanges();
             return NoContent();
-        }*/
+        }
     }
 }
