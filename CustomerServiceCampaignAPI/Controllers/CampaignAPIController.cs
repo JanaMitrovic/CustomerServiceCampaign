@@ -1,5 +1,6 @@
 ﻿using CustomerServiceCampaignAPI.Data;
 using CustomerServiceCampaignAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CustomerServiceCampaignAPI.Controllers
@@ -16,6 +17,7 @@ namespace CustomerServiceCampaignAPI.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<Campaign>> GetCampaigns()
         {
@@ -45,6 +47,7 @@ namespace CustomerServiceCampaignAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [Route("/startCampaign")]
@@ -79,6 +82,7 @@ namespace CustomerServiceCampaignAPI.Controllers
         }
 
         [HttpDelete("{id:int}", Name = "DeleteCampaign")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public IActionResult DeleteCampaign(int id)

@@ -5,6 +5,7 @@ using System.Xml;
 using System.Text;
 using Microsoft.VisualBasic.FileIO;
 using CustomerServiceCampaignAPI.Models.CustomerAPIData;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CustomerServiceCampaignAPI.Controllers
 {
@@ -20,6 +21,7 @@ namespace CustomerServiceCampaignAPI.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<Purchase>> GetPurchases()
         {
@@ -27,6 +29,7 @@ namespace CustomerServiceCampaignAPI.Controllers
         }
 
         [HttpGet("{id:int}", Name = "GetPurchase")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -49,6 +52,7 @@ namespace CustomerServiceCampaignAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [Route("/createPurchase")]
@@ -162,6 +166,7 @@ namespace CustomerServiceCampaignAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -216,6 +221,7 @@ namespace CustomerServiceCampaignAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Route("/showReportData")]
@@ -321,6 +327,7 @@ namespace CustomerServiceCampaignAPI.Controllers
         }
 
         [HttpDelete("{id:int}", Name = "DeletePurchase")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public IActionResult DeletePurchase(int id)

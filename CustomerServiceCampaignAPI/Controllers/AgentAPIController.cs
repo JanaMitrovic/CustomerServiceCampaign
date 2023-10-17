@@ -25,6 +25,7 @@ namespace CustomerServiceCampaignAPI.Controllers
         }
 
         [HttpGet("{id:int}", Name = "GetAgentbyId")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -47,6 +48,7 @@ namespace CustomerServiceCampaignAPI.Controllers
         }
 
         [HttpPost(Name = "GetAgentByEmail")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
