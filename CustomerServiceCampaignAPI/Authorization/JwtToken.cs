@@ -1,4 +1,5 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using CustomerServiceCampaignAPI.Models;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
@@ -22,7 +23,7 @@ namespace CustomerServiceCampaignAPI.Authorization
             SIGNING_KEY = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
         }
 
-        public static string GenerateJwtToken()
+        public static string GenerateJwtToken(Agent Agent)
         {
             var credentials = new SigningCredentials(SIGNING_KEY, SecurityAlgorithms.HmacSha256);
 
@@ -33,9 +34,9 @@ namespace CustomerServiceCampaignAPI.Authorization
 
             var payload = new JwtPayload
             {
-                {"sub", "Subject"},
-                {"name", "Name"},
-                {"email", "email@gmail.com"},
+                {"sub", Agent.Email},
+                {"name", Agent.Name},
+                {"email", Agent.Email},
                 {"exp", ts},
                 {"iss", "https://localhost:44305"},
                 {"aud","https://localhost:44305"}
