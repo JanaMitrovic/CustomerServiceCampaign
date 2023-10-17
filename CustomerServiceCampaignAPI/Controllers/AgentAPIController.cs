@@ -1,5 +1,6 @@
 ﻿using CustomerServiceCampaignAPI.Data;
 using CustomerServiceCampaignAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CustomerServiceCampaignAPI.Controllers
@@ -16,6 +17,7 @@ namespace CustomerServiceCampaignAPI.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<Agent>> GetAgents()
         {
