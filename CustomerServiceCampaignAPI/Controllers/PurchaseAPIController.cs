@@ -20,19 +20,23 @@ namespace CustomerServiceCampaignAPI.Controllers
             _db = db;
         }
 
+        //Get all purchases
         [HttpGet]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public ActionResult<IEnumerable<Purchase>> GetPurchases()
         {
             return Ok(_db.Purchases.ToList());
         }
 
+        //Get purchase by id
         [HttpGet("{id:int}", Name = "GetPurchase")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public ActionResult<Purchase> GetPurchase(int id)
         {
             if (id == 0)
@@ -51,10 +55,12 @@ namespace CustomerServiceCampaignAPI.Controllers
             return Ok(purchase);
         }
 
+        //Create purchase
         [HttpPost]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [Route("/createPurchase")]
         public async Task<ActionResult<Purchase>> CreatePurchase([FromBody] Purchase purchase)
         {
@@ -126,6 +132,7 @@ namespace CustomerServiceCampaignAPI.Controllers
 
         //Function for getting customer data from Customer service api
         //Returns null if customer does not exist
+        //Customer exists if xml file contains FindPersonResultElement
         [ApiExplorerSettings(IgnoreApi = true)]
         private async Task<XmlElement> GetCustomerData(int customerId)
         {
@@ -140,7 +147,6 @@ namespace CustomerServiceCampaignAPI.Controllers
                     if (response.IsSuccessStatusCode)
                     {
                         string xmlResponse = await response.Content.ReadAsStringAsync();
-                        Console.WriteLine(xmlResponse);
 
                         XmlDocument xmlDoc = new XmlDocument();
                         xmlDoc.LoadXml(xmlResponse);
@@ -165,11 +171,13 @@ namespace CustomerServiceCampaignAPI.Controllers
             return null;
         }
 
+        //Get .csv file for the campaign
         [HttpPost]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [Route("/getCsvReport")]
         public IActionResult GetCsvReport([FromBody] GetCsvRequestData request)
         {
@@ -220,10 +228,12 @@ namespace CustomerServiceCampaignAPI.Controllers
             return csv.ToString();
         }
 
+        //Show report data based on passed .csv file
         [HttpPost]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [Route("/showReportData")]
         public async Task<IActionResult> ShowReportData(IFormFile file)
         {
@@ -296,20 +306,6 @@ namespace CustomerServiceCampaignAPI.Controllers
                 SSN = GetElementValue(findPersonResult, "SSN"),
                 DOB = DateTime.Parse(GetElementValue(findPersonResult, "DOB")),
                 Age = long.Parse(GetElementValue(findPersonResult, "Age")),
-                Home = new Address
-                {
-                    Street = GetElementValue(findPersonResult, "Home/Street"),
-                    City = GetElementValue(findPersonResult, "Home/City"),
-                    State = GetElementValue(findPersonResult, "Home/State"),
-                    Zip = GetElementValue(findPersonResult, "Home/Zip")
-                },
-                Office = new Address
-                {
-                    Street = GetElementValue(findPersonResult, "Office/Street"),
-                    City = GetElementValue(findPersonResult, "Office/City"),
-                    State = GetElementValue(findPersonResult, "Office/State"),
-                    Zip = GetElementValue(findPersonResult, "Office/Zip")
-                },
             };
 
             return person;
@@ -326,6 +322,7 @@ namespace CustomerServiceCampaignAPI.Controllers
             return null;
         }
 
+        //Delete purchase
         [HttpDelete("{id:int}", Name = "DeletePurchase")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

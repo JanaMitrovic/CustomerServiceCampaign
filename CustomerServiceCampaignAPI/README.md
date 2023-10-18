@@ -55,21 +55,21 @@ URL '/startCampaign'
 ```JSON
 #json body
 {
-  "company": "string",
-  "campaignName": "string",
-  "startDate": "2023-10-18T13:34:17.064Z"
+  "company": "Name",
+  "campaignName": "Campaign",
+  "startDate": "2023-10-16T18:59:22.449Z"
 }
 ```
 
-### response - returns token value
+### response - returns created campaign
 ```JSON
 #json body
 {
-  "id": 0,
-  "company": "string",
-  "campaignName": "string",
-  "startDate": "2023-10-18T13:34:17.091Z",
-  "endDate": "2023-10-18T13:34:17.091Z"
+    "id": 34,
+    "company": "Name",
+    "campaignName": "Campaign",
+    "startDate": "2023-10-16T18:59:22.449Z",
+    "endDate": "2023-10-22T18:59:22.449Z"
 }
 ```
 
@@ -78,4 +78,153 @@ URL '/startCampaign'
 * 201 - campaign successfuly created/started
 * 400 - campaign object from request is null
 * 400 - campaign object from request has id parameter which is greater that 0
+* 401 - unauthorized
+
+## Create purchase endpoint
+
+This endpoint is used create purchase that shoud get a discount. It requires six parameters to be passed - Id of an agent
+that is creating purchase (each agent can create 5 purchases per day for a specific campaign), Id of a campaign to which 
+purchase relates, Customer Id that is making a purchase, purchase price, discunt that user gets for the purchase in percents 
+and a purchase date (it has to be withing campaign duration). If the agent exists, has not reached his daily limit, camapign
+exist as well as the customer (customer existis if it exists in SOAPDemo API) and purchase date is correct than price with
+discount will be calculated and purchase will be saved. Endpoint returs created purchase.
+
+URL '/createPurchase'
+
+### request body format
+
+```JSON
+#json body
+{
+  "agentId": 2,
+  "customerId": 7,
+  "campaignId": 32,
+  "price": 100.99,
+  "discount": 20,
+  "purchaseDate": "2023-10-22T19:11:18.042Z"
+}
+```
+
+### response - returns created purchase
+```JSON
+#json body
+{
+    "id": 58,
+    "agentId": 2,
+    "customerId": 7,
+    "campaignId": 32,
+    "price": 100.99,
+    "discount": 20.0,
+    "priceWithDiscount": 80.792,
+    "purchaseDate": "2023-10-22T19:11:18.042Z"
+}
+```
+
+### response statuses
+ 
+* 201 - campaign successfuly created/started
+* 400 - purchase object from request is null
+* 400 - purchase object from request has id parameter which is greater that 0
+* 400 - agent does not exist
+* 400 - campaign does not exist
+* 400 - campaign is not active (purchase date is not withing campaign duration)
+* 400 - customer does not exist
+* 400 - agent passed his daily limit
+* 401 - unauthorized
+
+## Get .csv report endpoint
+
+This endpoint is used to generate .csv report of successful purchases for a specific campaign. It requires two
+parameters - first one is campaign Id and second one is current date. Current date when company requires to get
+the report has to be at least one month after campaign end. If campaign with passed id exists and current date
+is accessible report will be generated.
+
+URL '/getCsvReport'
+
+### request body format
+
+```JSON
+#json body
+{
+  "campaignId": 32,
+  "currentDate": "2023-11-25T19:06:08.282Z"
+}
+```
+
+### response - returns .csv file with requested data
+
+Id,AgentName,AgentSurname,AgentEmail,CampaignName,Price,Discount,PriceWithDiscount,PurchaseDate,CustomerId
+54,John,Smith,john@gmail.com,c,144,14,123,10/20/2023 12:29:00 PM,1
+55,Mark,Kenfild,mark@gmail.com,c,1000,20,800,10/22/2023 7:11:18 PM,7
+56,Mark,Kenfild,mark@gmail.com,c,100,20,80,10/22/2023 7:11:18 PM,7
+57,Mark,Kenfild,mark@gmail.com,c,100,20,80,10/22/2023 7:11:18 PM,7
+58,Mark,Kenfild,mark@gmail.com,c,100,20,80,10/22/2023 7:11:18 PM,7
+
+### response statuses
+ 
+* 200 - file is created
+* 400 - campaign with passes id does not exist
+* 400 - current date is not at least one month after campaign end
+* 404 - no purchases found for desired campaign
+* 401 - unauthorized
+
+## Show report data
+
+This endpoint is used to show data from the .csv report with customer data obtained from the SOAPDemo API.
+It requires file filed through which .csv file is passed. As a response this endpoint returs all the report
+data with data of the customer for each purchase.
+
+URL '/showReportData'
+
+### request body format
+
+successfulPurchases.csv
+
+### response - returs list of successful purchases with customer data
+```JSON
+#json body
+[
+    {
+        "id": 60,
+        "agentName": "Mark",
+        "agentSurname": "Kenfild",
+        "agentEmail": "mark@gmail.com",
+        "campaignName": "Campaign",
+        "price": 100,
+        "discount": 20,
+        "priceWithDiscount": 80,
+        "purchaseDate": "2023-10-22T19:11:18",
+        "customer": {
+            "name": "Ubertini,Natasha G.",
+            "ssn": "986-47-7645",
+            "dob": "1934-09-15T00:00:00",
+            "age": 89
+        }
+    },
+    {
+        "id": 61,
+        "agentName": "Mark",
+        "agentSurname": "Kenfild",
+        "agentEmail": "mark@gmail.com",
+        "campaignName": "Campaign",
+        "price": 2000,
+        "discount": 20,
+        "priceWithDiscount": 1600,
+        "purchaseDate": "2023-10-22T19:11:18",
+        "customer": {
+            "name": "Ubertini,Natasha G.",
+            "ssn": "986-47-7645",
+            "dob": "1934-09-15T00:00:00",
+            "age": 89
+        }
+    }
+]
+```
+
+### response statuses
+ 
+* 201 - list of successful purchases returned
+* 400 - file object is null
+* 400 - file is empty
+* 400 - customer from the purchase does not exist
 * 401 - unauthorized

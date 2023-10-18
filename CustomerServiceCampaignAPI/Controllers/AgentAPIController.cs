@@ -16,6 +16,7 @@ namespace CustomerServiceCampaignAPI.Controllers
             _db = db;
         }
 
+        //Get all agents
         [HttpGet]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -24,6 +25,7 @@ namespace CustomerServiceCampaignAPI.Controllers
             return Ok(_db.Agents.ToList());
         }
 
+        //Get agent by Id
         [HttpGet("{id:int}", Name = "GetAgentbyId")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -47,6 +49,7 @@ namespace CustomerServiceCampaignAPI.Controllers
             return Ok(villa);
         }
 
+        //Get Agent by email
         [HttpPost(Name = "GetAgentByEmail")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
