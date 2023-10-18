@@ -26,8 +26,10 @@ namespace CustomerServiceCampaignAPI.Controllers
 
         [HttpPost("login")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult Login([FromBody] Credentials credentials)
         {
+            //Check if agent with passed email exists
             var agent = _db.Agents.FirstOrDefault(a => a.Email == credentials.Email);
 
             if (agent == null)
@@ -35,8 +37,8 @@ namespace CustomerServiceCampaignAPI.Controllers
                 return Unauthorized();
             }
 
+            //If agent exists return result containing generated token value
             string token = JwtToken.GenerateJwtToken(agent);
-
             return Ok(new { token });
         }
 

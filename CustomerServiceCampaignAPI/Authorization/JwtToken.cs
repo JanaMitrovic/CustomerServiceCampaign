@@ -7,13 +7,11 @@ namespace CustomerServiceCampaignAPI.Authorization
 {
     public static class JwtToken
     {
-        //private const string SECRET_KEY = "JU/GTX3gaRu+C6NZHNsVr2GfnGMo3j52uEtNyKzfUFE=";
-        //public static readonly SymmetricSecurityKey SIGNING_KEY = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SECRET_KEY));
-
         public static SymmetricSecurityKey SIGNING_KEY { get; private set; }
 
         static JwtToken()
         {
+            //Get secret key from the appsettings.js and initialize SIGNING_KEY
             IConfiguration configuration = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -25,32 +23,27 @@ namespace CustomerServiceCampaignAPI.Authorization
 
         public static string GenerateJwtToken(Agent Agent)
         {
+            //Specify signing algorithm
             var credentials = new SigningCredentials(SIGNING_KEY, SecurityAlgorithms.HmacSha256);
-
+            //Create header
             var header = new JwtHeader(credentials);
-
+            //Define token expiry time
             DateTime expiry = DateTime.UtcNow.AddHours(1);
             int ts = (int) (expiry - new DateTime(1970,1,1)).TotalSeconds;
-
+            //Define payload
             var payload = new JwtPayload
             {
-                {"sub", Agent.Email},
-                {"name", Agent.Name},
                 {"email", Agent.Email},
                 {"exp", ts},
                 {"iss", "https://localhost:44305"},
                 {"aud","https://localhost:44305"}
 
             };
-            
+            //Create token in string format
             var secToken = new JwtSecurityToken(header, payload);
-
             var handler = new JwtSecurityTokenHandler();
-
             var tokenString = handler.WriteToken(secToken);
 
-            Console.WriteLine(tokenString);
-            Console.WriteLine("Consume token");
             return tokenString;
 
         }
