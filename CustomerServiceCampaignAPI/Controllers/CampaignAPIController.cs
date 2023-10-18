@@ -16,18 +16,23 @@ namespace CustomerServiceCampaignAPI.Controllers
             _db = db;
         }
 
+        //Get all campaigns
         [HttpGet]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public ActionResult<IEnumerable<Campaign>> GetCampaigns()
         {
             return Ok(_db.Campaigns.ToList());
         }
 
+        //Get campaign by id
         [HttpGet("{id:int}", Name = "GetCampaign")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public ActionResult<Campaign> GetCampaign(int id)
         {
             if (id == 0)
@@ -46,10 +51,12 @@ namespace CustomerServiceCampaignAPI.Controllers
             return Ok(campaign);
         }
 
+        //Start new campaign
         [HttpPost]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [Route("/startCampaign")]
         public ActionResult<Campaign> CreateCampaign([FromBody] Campaign campaign)
         {
@@ -81,10 +88,12 @@ namespace CustomerServiceCampaignAPI.Controllers
             return CreatedAtAction(nameof(CreateCampaign), model);
         }
 
+        //Delete campaign
         [HttpDelete("{id:int}", Name = "DeleteCampaign")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public IActionResult DeleteCampaign(int id)
         {
             if (id == 0)

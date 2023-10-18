@@ -39,5 +39,43 @@ URL '/authorization/login'
 
 ### response statuses
  
-200 - token is successfuly generated
-401 - angent not found in the database
+* 200 - token is successfuly generated
+* 401 - agent not found in the database
+
+## Start campaign endpoint
+
+This endpoint is used to start the campaign. It requires three parameters - company name, campaign name and campaign start date.
+When endpoint is called it will calculate the end date of the campaign as 6 days after start date as campaign should last for one week.
+It returns information of create campaign.
+
+URL '/startCampaign'
+
+### request body format
+
+```JSON
+#json body
+{
+  "company": "string",
+  "campaignName": "string",
+  "startDate": "2023-10-18T13:34:17.064Z"
+}
+```
+
+### response - returns token value
+```JSON
+#json body
+{
+  "id": 0,
+  "company": "string",
+  "campaignName": "string",
+  "startDate": "2023-10-18T13:34:17.091Z",
+  "endDate": "2023-10-18T13:34:17.091Z"
+}
+```
+
+### response statuses
+ 
+* 201 - campaign successfuly created/started
+* 400 - campaign object from request is null
+* 400 - campaign object from request has id parameter which is greater that 0
+* 401 - unauthorized
