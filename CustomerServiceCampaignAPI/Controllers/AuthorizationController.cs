@@ -1,7 +1,9 @@
 ﻿using CustomerServiceCampaignAPI.Authorization;
 using CustomerServiceCampaignAPI.Data;
+using CustomerServiceCampaignAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
 
 namespace CustomerServiceCampaignAPI.Controllers
 {
@@ -24,9 +26,9 @@ namespace CustomerServiceCampaignAPI.Controllers
 
         [HttpPost("login")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public IActionResult Login([FromBody] string email)
+        public IActionResult Login([FromBody] Credentials credentials)
         {
-            var agent = _db.Agents.FirstOrDefault(a => a.Email == email);
+            var agent = _db.Agents.FirstOrDefault(a => a.Email == credentials.Email);
 
             if (agent == null)
             {
